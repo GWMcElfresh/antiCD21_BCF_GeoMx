@@ -1,0 +1,14 @@
+.DS_Store
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user
+Rplots.pdf
+
+renv/library/
+renv/local/
+renv/cellar/
+renv/lock/
+renv/python/
+renv/sandbox/
+renv/staging/
