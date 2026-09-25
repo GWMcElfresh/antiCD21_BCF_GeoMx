@@ -10,8 +10,8 @@ Authors of the companion script: GW McElfresh, Daniel Newhouse, Leanne Whitmore.
 The plotted values are row z-scores of voom log2 expression from the BCF
 limma–voom analysis, and the mean of those z-scores for each module.
 Figure 3B plots log2 fold change with anti-CD21 in the positive direction.
-Points are colored when unadjusted *P* < 0.05 and the absolute log2 fold
-change exceeds 0.58.
+Points are colored when Benjamini–Hochberg adjusted *P* < 0.05 and the
+absolute log2 fold change exceeds 0.58.
 
 ## Reproduce the analysis
 
@@ -43,8 +43,9 @@ The script writes these tracked manuscript artifacts under `figures/`:
 z-scores of voom log2 expression used to color each heatmap (genes by BCF ROI).
 Score sheets are the mean of those z-scores, one value per ROI, which is the
 quantity drawn in the score plots. The Figure 3B sheet is every gene in the
-BCF contrast: log2 fold change, −log10(unadjusted *P*), and the color class
-drawn on the plot. Positive log2 fold change is higher in anti-CD21.
+BCF contrast: log2 fold change, −log10(Benjamini–Hochberg adjusted *P*), and
+the color class drawn on the plot. Positive log2 fold change is higher in
+anti-CD21.
 
 The script reads these inputs from `data/`:
 

@@ -477,9 +477,9 @@ DrawBcfHeatmap <- function(
 
 #' Figure 3B volcano: grey points, chocolate1 higher in anti-CD21, steelblue lower.
 #'
-#' A point is colored when unadjusted P < 0.05 and absolute log2 fold change
-#' is greater than 0.58. Positive log2 fold change is higher in anti-CD21.
-#' The y axis is -log10 of the unadjusted P.
+#' A point is colored when Benjamini-Hochberg adjusted P < 0.05 and absolute
+#' log2 fold change is greater than 0.58. Positive log2 fold change is higher
+#' in anti-CD21. The y axis is -log10 of the adjusted P.
 #'
 #' @param de_table Differential expression table.
 #' @param stem File stem under figures/.
@@ -491,13 +491,17 @@ DrawBcfVolcano <- function(de_table, stem, main) {
     c("gene", "logFC", "P.Value", "adj.P.Val"),
     stem
   )
-  if (any(!is.finite(de_table$logFC) | !is.finite(de_table$P.Value))) {
-    stop(stem, " has non-finite logFC or P.Value")
+  if (
+    any(!is.finite(de_table$logFC)) ||
+      any(!is.finite(de_table$P.Value)) ||
+      any(!is.finite(de_table$adj.P.Val))
+  ) {
+    stop(stem, " has non-finite logFC, P.Value, or adj.P.Val")
   }
   de_table$point <- ifelse(
-    de_table$logFC > 0.58 & de_table$P.Value < 0.05,
+    de_table$logFC > 0.58 & de_table$adj.P.Val < 0.05,
     "up",
-    ifelse(de_table$logFC < -0.58 & de_table$P.Value < 0.05, "down", "ns")
+    ifelse(de_table$logFC < -0.58 & de_table$adj.P.Val < 0.05, "down", "ns")
   )
   for (extension in c("png", "pdf")) {
     path <- file.path(fig_dir, paste0(stem, ".", extension))
@@ -508,26 +512,26 @@ DrawBcfVolcano <- function(de_table, stem, main) {
     }
     graphics::plot(
       de_table$logFC,
-      -log10(de_table$P.Value),
+      -log10(de_table$adj.P.Val),
       pch = 21,
       col = "gray90",
       bg = "grey",
       xlab = "Log2 fold change (positive = anti-CD21)",
-      ylab = "-log10(P)",
+      ylab = "-log10(adj. P)",
       main = main
     )
     up <- de_table$point == "up"
     down <- de_table$point == "down"
     graphics::points(
       de_table$logFC[up],
-      -log10(de_table$P.Value[up]),
+      -log10(de_table$adj.P.Val[up]),
       pch = 21,
       col = "black",
       bg = "chocolate1"
     )
     graphics::points(
       de_table$logFC[down],
-      -log10(de_table$P.Value[down]),
+      -log10(de_table$adj.P.Val[down]),
       pch = 21,
       col = "black",
       bg = "steelblue"
@@ -552,7 +556,7 @@ WriteVolcanoSheet <- function(workbook, sheet, volcano) {
   plotted <- data.frame(
     gene = volcano$gene,
     logFC = volcano$logFC,
-    neg_log10_P = -log10(volcano$P.Value),
+    neg_log10_adj.P.Val = -log10(volcano$adj.P.Val),
     P.Value = volcano$P.Value,
     adj.P.Val = volcano$adj.P.Val,
     point = volcano$point,
@@ -726,8 +730,9 @@ notes <- data.frame(
       "Score values are the mean of those z-scores across module genes.",
       "Figure 3D, 3E, 11B, and 11C columns are ordered no treatment,",
       "then anti-CD21. Figure 3A clusters genes and ROIs.",
-      "Figure 3B point is up, down, or ns when unadjusted P < 0.05 and",
-      "absolute log2 fold change > 0.58. Positive logFC is higher in anti-CD21."
+      "Figure 3B point is up, down, or ns when Benjamini-Hochberg adjusted",
+      "P < 0.05 and absolute log2 fold change > 0.58. Positive logFC is",
+      "higher in anti-CD21."
     ),
     paste(
       "Figure 3A. Unclipped row z-scores for BCF genes with adjusted P < 0.05",
@@ -737,9 +742,9 @@ notes <- data.frame(
     ),
     paste(
       "Figure 3B. All genes in the BCF anti-CD21 versus no-treatment contrast.",
-      "Positive logFC is higher in anti-CD21. neg_log10_P is the plotted",
-      "y coordinate. point up is higher in anti-CD21. The y axis is -log10",
-      "of unadjusted P."
+      "Positive logFC is higher in anti-CD21. neg_log10_adj.P.Val is the",
+      "plotted y coordinate. point up is higher in anti-CD21. The y axis is",
+      "-log10 of the Benjamini-Hochberg adjusted P."
     ),
     "Figure 3D. Row z-scores for the immediate-early gene heatmap.",
     "Figure 3D. Per-ROI immediate-early scores drawn in the score plot.",
